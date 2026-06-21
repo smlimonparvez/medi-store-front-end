@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/axios";
 import { getErrorMessage } from "@/lib/utils";
@@ -14,20 +14,17 @@ const schema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-export default function LoginPage() {
+function LoginForm() {
   const { login } = useAuth();
   const router = useRouter();
-  const [redirect, setRedirect] = useState("");
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") || "";
 
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading]   = useState(false);
   const [errors, setErrors]     = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    setRedirect(new URLSearchParams(window.location.search).get("redirect") || "");
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,8 +41,8 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await api.post("/auth/login", { email, password });
-      const { user, token } = res.data.data;
-      login(user, token);
+      const { user } = res.data.data;
+      login(user);
       toast.success(`Welcome back, ${user.name.split(" ")[0]}!`);
       const dest = redirect || (user.role === "admin" ? "/admin" : user.role === "seller" ? "/seller/dashboard" : "/shop");
       router.push(dest);
@@ -106,5 +103,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }
