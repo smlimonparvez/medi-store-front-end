@@ -36,6 +36,7 @@ export default function CheckoutPage() {
   const [loading,       setLoading]       = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
   const [orderId,       setOrderId]       = useState<number | null>(null);
+  const stripeDisabled = true; // toggle to enable/disable Stripe option
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -162,16 +163,17 @@ export default function CheckoutPage() {
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {[
-                    { value: "cod"    as PaymentMethod, icon: Banknote,   label: "Cash on Delivery", desc: "Pay in cash when your order arrives" },
-                    { value: "stripe" as PaymentMethod, icon: CreditCard, label: "Pay with Card",     desc: "Visa, Mastercard via Stripe" },
+                    { value: "cod"    as PaymentMethod, icon: Banknote,   label: "Cash on Delivery", desc: "Pay in cash when your order arrives", disabled: false },
+                    { value: "stripe" as PaymentMethod, icon: CreditCard, label: "Pay with Card",     desc: "Visa, Mastercard via Stripe", disabled: stripeDisabled },
                   ].map((opt) => (
                     <button
                       key={opt.value}
                       type="button"
-                      onClick={() => setPaymentMethod(opt.value)}
+                      onClick={() => !opt.disabled && setPaymentMethod(opt.value)}
+                      disabled={opt.disabled}
                       className={`flex items-start gap-4 p-5 rounded-xl border-2 text-left transition-all ${
                         paymentMethod === opt.value ? "border-brand-500 bg-brand-50" : "border-gray-200 hover:border-brand-200"
-                      }`}
+                      } ${opt.disabled ? "opacity-60 cursor-not-allowed bg-gray-50 border-gray-100" : ""}`}
                     >
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${paymentMethod === opt.value ? "bg-brand-100" : "bg-gray-100"}`}>
                         <opt.icon className={`w-5 h-5 ${paymentMethod === opt.value ? "text-brand-600" : "text-gray-400"}`} />
@@ -180,7 +182,12 @@ export default function CheckoutPage() {
                         <p className={`font-semibold text-sm ${paymentMethod === opt.value ? "text-brand-700" : "text-gray-700"}`} style={{ fontFamily: "var(--font-sora)" }}>
                           {opt.label}
                         </p>
-                        <p className="text-xs text-gray-400 mt-0.5">{opt.desc}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <p className="text-xs text-gray-400">{opt.desc}</p>
+                          {opt.disabled && (
+                            <span className="text-xs text-red-500 font-semibold">Unavailable</span>
+                          )}
+                        </div>
                       </div>
                       {paymentMethod === opt.value && (
                         <div className="w-5 h-5 bg-brand-600 rounded-full flex items-center justify-center shrink-0 mt-0.5">
@@ -192,6 +199,13 @@ export default function CheckoutPage() {
                     </button>
                   ))}
                 </div>
+
+                {stripeDisabled && (
+                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-100 rounded-xl text-sm text-yellow-700 flex items-start gap-2">
+                    <CreditCard className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span>Card payments via Stripe are temporarily unavailable. Please use Cash on Delivery.</span>
+                  </div>
+                )}
                 {paymentMethod === "stripe" && (
                   <div className="mt-4 p-3 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-700 flex items-start gap-2">
                     <CreditCard className="w-4 h-4 shrink-0 mt-0.5" />

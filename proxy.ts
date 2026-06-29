@@ -6,8 +6,6 @@ const GUEST_ONLY = ["/login", "/register"];
 
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-
-  // medistore_token = HttpOnly cookie (set by Express) 
   const hasToken  = !!req.cookies.get("medistore_token")?.value;
   const userJson  = req.cookies.get("medistore_user")?.value;
 

@@ -1,9 +1,9 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL:         process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api",
+  baseURL:         "/api",
   headers:         { "Content-Type": "application/json" },
-  withCredentials: true, 
+  withCredentials: true, // Sends HttpOnly cookies automatically with every request
 });
 
 // Handle 401 globally — session expired or not logged in
