@@ -4,8 +4,8 @@ A Next.js 16.2.9 + TypeScript storefront for the MediStore medicine marketplace.
 
 ## Live Deployment
 
-- Frontend: `https://medi-store-front-end-alpha.vercel.app`
-- Backend API proxy: `https://medi-store-back-end-three.vercel.app/api`
+- Frontend: [https://medi-store-front-end-alpha.vercel.app](https://medi-store-front-end-alpha.vercel.app)
+- Backend API proxy: [https://medi-store-back-end-three.vercel.app/api](https://medi-store-back-end-three.vercel.app/api)
 
 ## Tech Stack
 
@@ -29,29 +29,87 @@ A Next.js 16.2.9 + TypeScript storefront for the MediStore medicine marketplace.
 
 ## Folder Structure
 
-```text
-app/                       # Next.js app router pages and layouts
-  (customer)/              # Customer-only pages (cart, checkout, orders)
-  admin/                   # Admin dashboard pages
-  seller/                  # Seller dashboard pages
-  checkout/                # Checkout success/cancel pages
-  login/                   # Login page
-  register/                # Register page
-  profile/                 # Customer profile page
-  shop/                    # Shop listing and medicine detail pages
-components/                # Reusable UI components
-  home/                    # Home page sections
-  medicine/                # Medicine card components
-  order/                   # Order status UI
-  shared/                  # Navbar, Footer, etc.
-  ui/                      # Generic UI helpers like skeleton loaders
-context/                   # React context providers for auth and cart
-lib/                       # Axios client and utility functions
-public/                    # Static assets
-types/                     # Shared TypeScript types
-README.md                  # Project documentation
-next.config.ts             # API rewrite configuration
-proxy.ts                   # Route protection middleware
+```medi-store-front-end-extended/
+│
+├── app/                              # Next.js App Router pages
+│   ├── page.tsx                      # Public homepage
+│   ├── layout.tsx                    # Root layout (providers, fonts)
+│   ├── globals.css                   # Global styles + Tailwind v4 theme
+│   ├── not-found.tsx                 # 404 page
+│   ├── 403/page.tsx                  # Forbidden page
+│   │
+│   ├── (customer)/                   # Customer route group
+│   │   ├── cart/page.tsx             # Shopping cart
+│   │   ├── checkout/page.tsx         # COD + Stripe checkout flow
+│   │   └── orders/
+│   │       ├── page.tsx              # Order history
+│   │       └── [id]/page.tsx         # Order detail
+│   │
+│   ├── checkout/                     # Stripe redirect landing pages
+│   │   ├── success/page.tsx          # Payment success
+│   │   └── cancel/page.tsx           # Payment cancelled
+│   │
+│   ├── shop/
+│   │   ├── page.tsx                  # Medicine listing with filters
+│   │   └── [id]/page.tsx             # Medicine detail + reviews
+│   │
+│   ├── wishlist/page.tsx             # Saved medicines
+│   ├── profile/page.tsx              # User profile + edit
+│   ├── login/page.tsx                # Login (Suspense-wrapped for Next.js 16)
+│   ├── register/page.tsx             # Registration
+│   ├── about/page.tsx                # About page
+│   ├── contact/page.tsx              # Contact page
+│   ├── faq/page.tsx                  # FAQ page
+│   │
+│   ├── seller/                       # Seller dashboard (role-protected)
+│   │   ├── dashboard/page.tsx        # Stats overview
+│   │   ├── medicines/page.tsx        # Manage products (CRUD)
+│   │   └── orders/page.tsx           # Incoming orders
+│   │
+│   └── admin/                        # Admin dashboard (role-protected)
+│       ├── page.tsx                  # Stats overview → /admin
+│       ├── users/page.tsx            # User management (ban/unban)
+│       ├── categories/page.tsx       # Category management (CRUD)
+│       └── orders/page.tsx           # All orders
+│
+├── components/
+│   ├── home/                         # Homepage sections
+│   │   ├── HeroSection.tsx
+│   │   ├── FeaturedMedicines.tsx
+│   │   ├── CategoriesSection.tsx
+│   │   ├── HowItWorks.tsx
+│   │   ├── StatsSection.tsx
+│   │   ├── TestimonialsSection.tsx
+│   │   └── TrustBanner.tsx
+│   ├── medicine/
+│   │   └── MedicineCard.tsx          # Reusable medicine card
+│   ├── order/
+│   │   └── OrderStatusBadge.tsx      # Colour-coded status badge
+│   ├── shared/
+│   │   ├── Navbar.tsx                # Top navigation (role-aware)
+│   │   └── Footer.tsx
+│   └── ui/
+│       └── Skeleton.tsx              # Loading skeleton component
+│
+├── context/
+│   ├── AuthContext.tsx               # Auth state — localStorage + JWT
+│   ├── CartContext.tsx               # Cart state — localStorage
+│   └── WishlistContext.tsx           # Wishlist state — localStorage
+│
+├── lib/
+│   ├── axios.ts                      # Axios instance + auth interceptor
+│   └── utils.ts                      # cn(), formatPrice(), getErrorMessage()
+│
+├── types/
+│   └── index.ts                      # Shared TypeScript types
+│                                     # (User, Medicine, Order, Category, etc.)
+│
+├── public/                           # Static assets
+├── proxy.ts                          # Next.js middleware — route protection
+├── next.config.ts                    # Next.js config
+├── tailwind.config.ts                # Tailwind config
+├── tsconfig.json                     # TypeScript config
+└── package.json
 ```
 
 ## API Configuration
@@ -95,48 +153,72 @@ The Axios client in `lib/axios.ts` is configured with:
 These endpoints are consumed by the frontend through the `/api` proxy.
 
 ### Auth
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `POST /api/auth/logout`
-- `GET /api/auth/me`
+
+| Method | Endpoint |
+| --- | --- |
+| POST | `/api/auth/register` |
+| POST | `/api/auth/login` |
+| POST | `/api/auth/logout` |
+| GET | `/api/auth/me` |
 
 ### Categories
-- `GET /api/categories`
-- `POST /api/categories`
-- `PUT /api/categories/:id`
-- `DELETE /api/categories/:id`
+
+| Method | Endpoint |
+| --- | --- |
+| GET | `/api/categories` |
+| POST | `/api/categories` |
+| PUT | `/api/categories/:id` |
+| DELETE | `/api/categories/:id` |
 
 ### Medicines
-- `GET /api/medicines`
-- `GET /api/medicines/:id`
-- `POST /api/medicines`
-- `PUT /api/medicines/:id`
-- `DELETE /api/medicines/:id`
+
+| Method | Endpoint |
+| --- | --- |
+| GET | `/api/medicines` |
+| GET | `/api/medicines/:id` |
+| POST | `/api/medicines` |
+| PUT | `/api/medicines/:id` |
+| DELETE | `/api/medicines/:id` |
 
 ### Orders
-- `POST /api/orders`
-- `GET /api/orders/my-orders`
-- `GET /api/orders/:id`
+
+| Method | Endpoint |
+| --- | --- |
+| POST | `/api/orders` |
+| GET | `/api/orders/my-orders` |
+| GET | `/api/orders/:id` |
 
 ### Payments
-- `POST /api/payments/create-checkout-session`
+
+| Method | Endpoint |
+| --- | --- |
+| POST | `/api/payments/create-checkout-session` |
 
 ### Reviews
-- `POST /api/reviews`
+
+| Method | Endpoint |
+| --- | --- |
+| POST | `/api/reviews` |
 
 ### Seller
-- `GET /api/seller/dashboard`
-- `GET /api/seller/medicines`
-- `POST /api/seller/medicines`
-- `PUT /api/seller/medicines/:id`
-- `DELETE /api/seller/medicines/:id`
-- `GET /api/seller/orders`
+
+| Method | Endpoint |
+| --- | --- |
+| GET | `/api/seller/dashboard` |
+| GET | `/api/seller/medicines` |
+| POST | `/api/seller/medicines` |
+| PUT | `/api/seller/medicines/:id` |
+| DELETE | `/api/seller/medicines/:id` |
+| GET | `/api/seller/orders` |
 
 ### Admin
-- `GET /api/admin/dashboard`
-- `GET /api/admin/users`
-- `PATCH /api/admin/users/:id`
-- `GET /api/admin/orders`
+
+| Method | Endpoint |
+| --- | --- |
+| GET | `/api/admin/dashboard` |
+| GET | `/api/admin/users` |
+| PATCH | `/api/admin/users/:id` |
+| GET | `/api/admin/orders` |
 
 ## Environment Setup
 
